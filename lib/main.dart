@@ -20,12 +20,24 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Dummy data to populate the list
+    final List<Map<String, dynamic>> dataList = [
+      {
+        'title': '확인중',
+        'subtitle': '디럭스 / 1박',
+        'dates': '11.07 (수) 22:00 - 11.08 (목) 12:00',
+        'confirmationNumber': '1908011709320157',
+      },
+      // Add more entries here
+      // ...
+    ];
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF2D3E5E), // Replace with your desired color
-        elevation: 0, // Removes shadow below the AppBar
+        backgroundColor: Color(0xFF2D3E5E),
+        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.notifications_none, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             // Handle back icon press
           },
@@ -43,7 +55,7 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             Text(
-              '리버 부티크 호텔', // 'River Boutique Hotel' in Korean
+              '리버 부티크 호텔',
               style: TextStyle(
                 color: Colors.white.withOpacity(0.85),
                 fontSize: 12.0,
@@ -51,7 +63,7 @@ class MyHomePage extends StatelessWidget {
             ),
           ],
         ),
-        centerTitle: true, // This centers the title column
+        centerTitle: true,
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.menu, color: Colors.white),
@@ -61,8 +73,25 @@ class MyHomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Text('Your main content goes here'),
+      body: SingleChildScrollView(
+        child: Column(
+          children: dataList.map((data) {
+            return Card(
+              child: ListTile(
+                title: Text(data['title']),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(data['subtitle']),
+                    Text(data['dates']),
+                    Text(data['confirmationNumber']),
+                  ],
+                ),
+                trailing: Icon(Icons.arrow_forward_ios),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
