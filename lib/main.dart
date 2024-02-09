@@ -8,6 +8,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Custom AppBar',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -23,10 +24,15 @@ class MyHomePage extends StatelessWidget {
     // Dummy data to populate the list
     final List<Map<String, dynamic>> dataList = [
       {
-        'title': '확인중',
-        'subtitle': '디럭스 / 1박',
-        'dates': '11.07 (수) 22:00 - 11.08 (목) 12:00',
-        'confirmationNumber': '1908011709320157',
+        'Name' : '홍길동',
+        'statusColor': Colors.blue, // Assuming blue means 'pending'
+        'statusText': '확인중', // 'Pending confirmation'
+        'room': '디럭스', // 'Deluxe'
+        'roomType' : '숙박',
+        'stayDuration': '1박', // '1 night'
+        'checkInDate': '11.07 (수) 22:00', // 'Check-in date and time'
+        'checkOutDate': '11.08 (목) 12:00', // 'Check-out date and time'
+        'confirmationNumber': '1908011709320157', // 'Confirmation number'
       },
       // Add more entries here
       // ...
@@ -34,10 +40,10 @@ class MyHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF2D3E5E),
+        backgroundColor: Color(0xFF2D3E5E), // Custom color
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.notifications_none, color: Colors.white),
           onPressed: () {
             // Handle back icon press
           },
@@ -47,7 +53,7 @@ class MyHomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Text(
-              '예약',
+              '예약', // 'Reservation'
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18.0,
@@ -55,7 +61,7 @@ class MyHomePage extends StatelessWidget {
               ),
             ),
             Text(
-              '리버 부티크 호텔',
+              '리버 부티크 호텔', // 'River Boutique Hotel'
               style: TextStyle(
                 color: Colors.white.withOpacity(0.85),
                 fontSize: 12.0,
@@ -77,17 +83,55 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           children: dataList.map((data) {
             return Card(
+              margin: EdgeInsets.all(8.0),
               child: ListTile(
-                title: Text(data['title']),
-                subtitle: Column(
+                leading: Container(
+                  width: 5.0,
+                  height: double.infinity,
+                  color: data['statusColor'],
+                ),
+                title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(data['subtitle']),
-                    Text(data['dates']),
-                    Text(data['confirmationNumber']),
+                  children: [
+                    Text(
+                      data['Name'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10.0),
+                    Text('${data['room']}',
+                    style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold), ),
+                    SizedBox(height: 10.0),
+                    Text('${data['roomType']} / ${data['stayDuration']}'),
+                    SizedBox(height: 10.0),
+                    Text('${data['checkInDate']} - ${data['checkOutDate']}', style: TextStyle(fontSize: 13.0),),
+                    SizedBox(height: 4.0),
+                    Text('Confirmation: ${data['confirmationNumber']}', style: TextStyle(fontSize: 13.0),),
                   ],
                 ),
-                trailing: Icon(Icons.arrow_forward_ios),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      data['statusText'],
+                      style: TextStyle(
+                        color: data['statusColor'],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16.0,
+                      color: data['statusColor'],
+                    )
+                  ]
+                ),
+                onTap: () {
+                  // Handle tap event
+                },
               ),
             );
           }).toList(),
