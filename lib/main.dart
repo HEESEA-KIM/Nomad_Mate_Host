@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const HostApp());
 }
 
-class MyApp extends StatelessWidget {
+class HostApp extends StatelessWidget {
+  const HostApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,22 +15,24 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: const HostAppHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class HostAppHomePage extends StatelessWidget {
+  const HostAppHomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Dummy data to populate the list
     final List<Map<String, dynamic>> dataList = [
       {
-        'Name' : '홍길동',
+        'Name': '홍길동',
         'statusColor': Colors.blue, // Assuming blue means 'pending'
         'statusText': '확인중', // 'Pending confirmation'
         'room': '디럭스', // 'Deluxe'
-        'roomType' : '숙박',
+        'roomType': '숙박',
         'stayDuration': '1박', // '1 night'
         'checkInDate': '11.07 (수) 22:00', // 'Check-in date and time'
         'checkOutDate': '11.08 (목) 12:00', // 'Check-out date and time'
@@ -40,10 +44,11 @@ class MyHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF2D3E5E), // Custom color
+        backgroundColor: const Color(0xFF2D3E5E),
+        // Custom color
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.notifications_none, color: Colors.white),
+          icon: const Icon(Icons.notifications_none, color: Colors.white),
           onPressed: () {
             // Handle back icon press
           },
@@ -52,7 +57,7 @@ class MyHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Text(
+            const Text(
               '예약', // 'Reservation'
               style: TextStyle(
                 color: Colors.white,
@@ -72,7 +77,7 @@ class MyHomePage extends StatelessWidget {
         centerTitle: true,
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.menu, color: Colors.white),
+            icon: const Icon(Icons.menu, color: Colors.white),
             onPressed: () {
               // Handle menu icon press
             },
@@ -83,7 +88,7 @@ class MyHomePage extends StatelessWidget {
         child: Column(
           children: dataList.map((data) {
             return Card(
-              margin: EdgeInsets.all(8.0),
+              margin: const EdgeInsets.all(8.0),
               child: ListTile(
                 leading: Container(
                   width: 5.0,
@@ -95,40 +100,44 @@ class MyHomePage extends StatelessWidget {
                   children: [
                     Text(
                       data['Name'],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10.0),
-                    Text('${data['room']}',
-                    style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.bold), ),
-                    SizedBox(height: 10.0),
+                    const SizedBox(height: 10.0),
+                    Text(
+                      '${data['room']}',
+                      style: const TextStyle(
+                          fontSize: 16.0, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10.0),
                     Text('${data['roomType']} / ${data['stayDuration']}'),
-                    SizedBox(height: 10.0),
-                    Text('${data['checkInDate']} - ${data['checkOutDate']}', style: TextStyle(fontSize: 13.0),),
-                    SizedBox(height: 4.0),
-                    Text('Confirmation: ${data['confirmationNumber']}', style: TextStyle(fontSize: 13.0),),
+                    const SizedBox(height: 10.0),
+                    Text(
+                      '${data['checkInDate']} - ${data['checkOutDate']}',
+                      style: const TextStyle(fontSize: 13.0),
+                    ),
+                    const SizedBox(height: 4.0),
+                    Text(
+                      'Confirmation: ${data['confirmationNumber']}',
+                      style: const TextStyle(fontSize: 13.0),
+                    ),
                   ],
                 ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      data['statusText'],
-                      style: TextStyle(
-                        color: data['statusColor'],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16.0,
+                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(
+                    data['statusText'],
+                    style: TextStyle(
                       color: data['statusColor'],
-                    )
-                  ]
-                ),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16.0,
+                    color: data['statusColor'],
+                  )
+                ]),
                 onTap: () {
                   // Handle tap event
                 },
