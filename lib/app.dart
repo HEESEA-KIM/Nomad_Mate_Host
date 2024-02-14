@@ -1,119 +1,115 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:nomad/firestore_data.dart';
 
 class HostAppHomePage extends StatelessWidget {
-  const HostAppHomePage({super.key});
-
+  HostAppHomePage({super.key});
+  final FirestoreData firestoreData = FirestoreData();
   @override
   Widget build(BuildContext context) {
-    // Dummy data to populate the list
-    final List<Map<String, dynamic>> dataList = [
-      {
-        'Name': '홍길동',
-        'statusColor': Colors.blue, // Assuming blue means 'pending'
-        'statusText': '확인중', // 'Pending confirmation'
-        'room': '디럭스', // 'Deluxe'
-        'checkInDate': '11.07 (수) 22:00', // 'Check-in date and time'
-        'confirmationNumber': '1908011157', // 'Confirmation number'
-      },
-      // Add more entries here
-      // ...
-    ];
+    final firestoreData = FirestoreData();
 
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Reservations'),
         backgroundColor: const Color(0xFF2D3E5E),
-        // Custom color
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.notifications_none, color: Colors.white),
-          onPressed: () {
-            // Handle back icon press
-          },
-        ),
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              '예약', // 'Reservation'
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18.0,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.menu, color: Colors.white),
-            onPressed: () {
-              // Handle menu icon press
-            },
-          ),
-        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: dataList.map((data) {
-            return Card(
-              margin: const EdgeInsets.all(8.0),
-              child: ListTile(
-                leading: Container(
-                  width: 5.0,
-                  height: double.infinity,
-                  color: data['statusColor'],
-                ),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data['Name'],
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10.0),
-                    Text(
-                      '${data['room']}',
-                      style: const TextStyle(
-                          fontSize: 16.0, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10.0),
-                    Text(
-                      '${data['checkInDate']} ',
-                      style: const TextStyle(fontSize: 13.0),
-                    ),
-                    const SizedBox(height: 4.0),
-                    Text(
-                      '예약: ${data['confirmationNumber']}',
-                      style: const TextStyle(fontSize: 13.0),
-                    ),
-                  ],
-                ),
-                trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(
-                    data['statusText'],
-                    style: TextStyle(
-                      color: data['statusColor'],
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: firestoreData.getReservations(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Text("Loading");
+          }
+
+          final data = snapshot.requireData;
+
+          return ListView.builder(
+            itemCount: data.size,
+            itemBuilder: (context, index) {
+              var reservation = data.docs[index];
+              var reservationData = reservation.data() as Map<String, dynamic>;
+
+              // Firestore 'timestamp'를 DateTime 객체로 변환
+              DateTime dateTime =
+                  (reservationData['timestamp'] as Timestamp).toDate();
+
+              // 사용자가 읽기 쉬운 형식으로 날짜 포맷 변경
+              String formattedDate =
+                  DateFormat('yyyy/MM/dd HH:mm').format(dateTime);
+
+              return Card(
+                margin: const EdgeInsets.all(8.0),
+                child: ListTile(
+                  leading: Container(
+                    width: 5.0,
+                    height: double.infinity,
+                    color: Colors.blue, // Example, adjust based on your data
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16.0,
-                    color: data['statusColor'],
-                  )
-                ]),
-                onTap: () {
-                  // Handle tap event
-                },
-              ),
-            );
-          }).toList(),
-        ),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTranslatedText(reservationData['country'] ?? '', 'ko'),
+                      Text(
+                        "이름: ${reservationData['name'] ?? '이름 없음'}",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "예약날짜: ${reservationData['selectedDate'] ?? 'No Date'}",
+                        style: const TextStyle(fontSize: 13.0),
+                      ),
+                      const SizedBox(height: 10.0),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(fontSize: 13.0),
+                      ),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        reservationData['statusText'] ?? '접수중',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16.0,
+                        color: Colors.blue,
+                      )
+                    ],
+                  ),
+                  onTap: () {
+                    // Handle tap event
+                  },
+                ),
+              );
+            },
+          );
+        },
       ),
+    );
+  }
+  Widget _buildTranslatedText(String text, String targetLanguage) {
+    return FutureBuilder<String>(
+      future: firestoreData.translateText(text, targetLanguage),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Text('...'); // 로딩 텍스트 또는 위젯
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          return Text(snapshot.data ?? '번역 실패'); // 번역된 텍스트 또는 기본값
+        }
+      },
     );
   }
 }
