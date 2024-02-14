@@ -12,11 +12,8 @@ class HostAppHomePage extends StatelessWidget {
         'statusColor': Colors.blue, // Assuming blue means 'pending'
         'statusText': '확인중', // 'Pending confirmation'
         'room': '디럭스', // 'Deluxe'
-        'roomType': '숙박',
-        'stayDuration': '1박', // '1 night'
         'checkInDate': '11.07 (수) 22:00', // 'Check-in date and time'
-        'checkOutDate': '11.08 (목) 12:00', // 'Check-out date and time'
-        'confirmationNumber': '1908011709320157', // 'Confirmation number'
+        'confirmationNumber': '1908011157', // 'Confirmation number'
       },
       // Add more entries here
       // ...
@@ -43,13 +40,6 @@ class HostAppHomePage extends StatelessWidget {
                 color: Colors.white,
                 fontSize: 18.0,
                 fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              '리버 부티크 호텔', // 'River Boutique Hotel'
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
-                fontSize: 12.0,
               ),
             ),
           ],
@@ -91,15 +81,13 @@ class HostAppHomePage extends StatelessWidget {
                           fontSize: 16.0, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10.0),
-                    Text('${data['roomType']} / ${data['stayDuration']}'),
-                    const SizedBox(height: 10.0),
                     Text(
-                      '${data['checkInDate']} - ${data['checkOutDate']}',
+                      '${data['checkInDate']} ',
                       style: const TextStyle(fontSize: 13.0),
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      'Confirmation: ${data['confirmationNumber']}',
+                      '예약: ${data['confirmationNumber']}',
                       style: const TextStyle(fontSize: 13.0),
                     ),
                   ],
