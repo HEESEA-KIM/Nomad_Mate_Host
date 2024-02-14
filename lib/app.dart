@@ -57,11 +57,12 @@ class HostAppHomePage extends StatelessWidget {
                         "이름: ${reservationData['name'] ?? '이름 없음'}",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
                       ),
                       Text(
                         "예약날짜: ${reservationData['selectedDate'] ?? 'No Date'}",
-                        style: const TextStyle(fontSize: 13.0),
+                        style: const TextStyle(fontSize: 13.0,fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 10.0),
                       Text(
@@ -107,7 +108,10 @@ class HostAppHomePage extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else {
-          return Text(snapshot.data ?? '번역 실패'); // 번역된 텍스트 또는 기본값
+          return Text('국적: ${snapshot.data ?? '번역 실패'}',style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),); // 번역된 텍스트 또는 기본값
         }
       },
     );
