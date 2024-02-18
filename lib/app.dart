@@ -35,11 +35,11 @@ class HostAppHomePage extends StatelessWidget {
 
               // Firestore 'timestamp'를 DateTime 객체로 변환
               DateTime dateTime =
-                  (reservationData['timestamp'] as Timestamp).toDate();
+              (reservationData['timestamp'] as Timestamp).toDate();
 
               // 사용자가 읽기 쉬운 형식으로 날짜 포맷 변경
               String formattedDate =
-                  DateFormat('yyyy/MM/dd HH:mm').format(dateTime);
+              DateFormat('yyyy/MM/dd HH:mm').format(dateTime);
 
               return Card(
                 margin: const EdgeInsets.all(8.0),
@@ -89,6 +89,10 @@ class HostAppHomePage extends StatelessWidget {
                     ],
                   ),
                   onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ReservationDetailsPage(reservationData: reservationData)),
+                    );
                     // Handle tap event
                   },
                 ),
@@ -114,6 +118,33 @@ class HostAppHomePage extends StatelessWidget {
           ),); // 번역된 텍스트 또는 기본값
         }
       },
+    );
+  }
+}
+
+class ReservationDetailsPage extends StatelessWidget {
+  final Map<String, dynamic> reservationData;
+  const ReservationDetailsPage({Key? key, required this.reservationData}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(reservationData['name'] ?? 'Reservation Details'),
+        backgroundColor: Color(0xFF2D3E5E),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text("이름 : ${reservationData['name'] ?? 'N/A'}"),
+            Text('성별 ?'),
+            Text('나이 ?'),
+            Text("국가 : ${reservationData['country'] ?? 'N/A'}"),
+            Text("예약 날짜: ${reservationData['selectedDate'] ?? 'N/A'}"),
+          ],
+        ),
+      ),
     );
   }
 }
