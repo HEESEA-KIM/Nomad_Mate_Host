@@ -130,20 +130,62 @@ class ReservationDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(reservationData['name'] ?? 'Reservation Details'),
+        title: Text('예약고객정보'),
         backgroundColor: Color(0xFF2D3E5E),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
         child: Column(
-          children: [
-            Text("이름 : ${reservationData['name'] ?? 'N/A'}"),
-            Text('성별 ?'),
-            Text('나이 ?'),
-            Text("국가 : ${reservationData['country'] ?? 'N/A'}"),
-            Text("예약 날짜: ${reservationData['selectedDate'] ?? 'N/A'}"),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            InformationRow(label: '국적', value: '대한민국'),
+            InformationRow(label: '이름', value: '홍길동'),
+            InformationRow(label: '성별', value: '남자'),
+            InformationRow(label: '이메일', value: 'gmltp@naver.com'),
+            InformationRow(label: '여권번호', value: '0101010'),
+            InformationRow(label: '여권만료일', value: '2024-03-30'),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class InformationRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const InformationRow({
+    Key? key,
+    required this.label,
+    required this.value,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blueAccent),
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.blueAccent,
+            ),
+          ),
+        ],
       ),
     );
   }
