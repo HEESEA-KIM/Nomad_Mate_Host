@@ -164,25 +164,36 @@ class InformationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 60,
       margin: EdgeInsets.symmetric(vertical: 8.0),
       padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.blueAccent),
+        color: Colors.white,
+        border: Border.all(color: Colors.blueAccent, width: 2),
         borderRadius: BorderRadius.circular(4.0),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+                fontSize: 16,
+            ),
             ),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.blueAccent,
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: Colors.blueAccent,
+                fontSize: 14,
+            ),
             ),
           ),
         ],
