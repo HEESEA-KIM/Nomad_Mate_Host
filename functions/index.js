@@ -1,19 +1,29 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
-// const {onRequest} = require("firebase-functions/v2/https");
-// const logger = require("firebase-functions/logger");
+exports.sendReservationNotification = functions.firestore
+    .document("reservations/{reservationId}")
+    .onCreate((snapshot, context) => { // 화살표 함수 매개변수에 괄호 추가
+        const reservationData = snapshot.data();
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+        const payload = {
+            notification: {
+                title: "New reservation notification",
+                body: `${reservationData.name}'s reservation has been received.`,
+                // 여기에 추가 옵션을 포함할 수 있습니다.
+            },
+        };
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+        // 특정 토큰이나 주제를 구독한 사용자에게 알림을 보냅니다.
+        // 예시: admin.messaging().sendToTopic("reservations", payload);
+        // 개별 토큰 사용 시: admin.messaging().sendToDevice(token, payload);
+
+        return admin.messaging().sendToTopic("reservations", payload)
+            .then((response) => {
+                console.log("Successfully sent message:", response);
+            })
+            .catch((error) => {
+                console.log("Error sending message:", error);
+            });
+    });
