@@ -57,19 +57,21 @@ class HostAppHomePage extends StatelessWidget {
                     children: [
                       _buildTranslatedText(
                           reservationData['country'] ?? '', 'ko'),
+                      SizedBox(height: 3),
                       Text(
                         "이름: ${reservationData['name'] ?? '이름 없음'}",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 15.0,
                         ),
                       ),
+                      SizedBox(height: 3),
                       Text(
                         "예약날짜: ${reservationData['selectedDate'] ?? 'No Date'}",
                         style: const TextStyle(
-                            fontSize: 13.0, fontWeight: FontWeight.bold),
+                            fontSize: 15.0, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 10.0),
+                      SizedBox(height: 3),
                       Text(
                         formattedDate,
                         style: const TextStyle(fontSize: 13.0),
@@ -83,6 +85,7 @@ class HostAppHomePage extends StatelessWidget {
                         reservationData['statusText'] ?? '접수중',
                         style: TextStyle(
                           color: Colors.blue,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
