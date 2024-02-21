@@ -1,6 +1,10 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
-admin.initializeApp();
+const serviceAccount = require("./nomadmate-firebase-adminsdk-wlnhp-2b44d99545.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 exports.sendReservationNotification = functions.firestore
     .document("reservations/{reservationId}")
@@ -9,8 +13,8 @@ exports.sendReservationNotification = functions.firestore
 
         const payload = {
             notification: {
-                title: "New reservation notification",
-                body: `${reservationData.name}'s reservation has been received.`,
+                title: "새로운 예약이 접수되었습니다.",
+                body: `${reservationData.name}님의 예약을 확인 후 승인 해 주세요.`,
                 // 여기에 추가 옵션을 포함할 수 있습니다.
             },
         };

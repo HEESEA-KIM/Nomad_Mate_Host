@@ -40,42 +40,6 @@
           ]
         }
       }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:495475729075:android:ed1f79c8e1259b464846c6",
-        "android_client_info": {
-          "package_name": "com.example.nomad"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "495475729075-51oqt7q910tjcbujdhrlpppke9cfkqhc.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAX9uIBYKJ-WQ7GJQN6nzyeAA9Pv1vUFHo"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "495475729075-51oqt7q910tjcbujdhrlpppke9cfkqhc.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "495475729075-pajt43v2j20nh2gtbgtguec518bf5tr5.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.example.hanstour.RunnerTests"
-              }
-            }
-          ]
-        }
-      }
     }
   ],
   "configuration_version": "1"

@@ -12,6 +12,16 @@
       "predeploy": [
         "npm --prefix functions run lint"
       ]
+    },
+    {
+      "source": "nomad",
+      "codebase": "nomad",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
     }
   ]
 }

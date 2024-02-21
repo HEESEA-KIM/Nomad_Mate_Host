@@ -71,6 +71,7 @@ flutter:
     - assets/
     - assets/config/.env
     - assets/images/appIcon.png
+    - assets/config/.env
 flutter_icons:
   image_path: "assets/images/appIcon.png"  # 앱 아이콘 이미지 경로
   android: true  # 안드로이드용 아이콘 설정
