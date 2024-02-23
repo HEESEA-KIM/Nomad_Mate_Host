@@ -10,6 +10,10 @@ class FirestoreData {
     return _firestore.collection('reservations').snapshots();
   }
   Future<String> translateText(String text, String targetLanguage) async {
+    if (targetLanguage == 'ko') {
+      return text; // 한국어일 경우 API 호출 없이 바로 반환
+    }
+
     final apiKey = dotenv.env['APP_KEY'] ?? '';
     final url = Uri.parse('https://translation.googleapis.com/language/translate/v2?key=$apiKey');
 

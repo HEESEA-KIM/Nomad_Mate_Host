@@ -15,7 +15,7 @@ class HostAppHomePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reservations'),
+        title: const Text(' 예약 현황 '),
         backgroundColor: const Color(0xFF2D3E5E),
       ),
       body: StreamBuilder<QuerySnapshot>(
@@ -25,7 +25,7 @@ class HostAppHomePage extends StatelessWidget {
             return Text('Error: ${snapshot.error}');
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Text("Loading");
+            return const Text(" Loading...");
           }
 
           final data = snapshot.requireData;
