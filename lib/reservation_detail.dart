@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'firestore_data.dart';
+
 class ReservationDetailsPage extends StatelessWidget {
   final Map<String, dynamic> reservationData;
+  final FirestoreData firestoreData = FirestoreData();
 
-  const ReservationDetailsPage({Key? key, required this.reservationData})
+  ReservationDetailsPage({Key? key, required this.reservationData})
       : super(key: key);
 
   @override
@@ -18,18 +21,42 @@ class ReservationDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            InformationRow(label: '국적', value: '대한민국'),
-            InformationRow(label: '이름', value: '홍길동'),
-            InformationRow(label: '성별', value: '남자'),
-            InformationRow(label: '이메일', value: 'gmltp@naver.com'),
-            InformationRow(label: '여권번호', value: '0101010'),
-            InformationRow(label: '여권만료일', value: '2024-03-30'),
-            InformationRow(label: '인원', value: '2명'),
-            InformationRow(label: '이용상품', value: '경복궁투어'),
-            InformationRow(label: '연락처', value: '010-xxxx-xxxx'),
+            InformationRow(
+              label: '국적',
+              value: reservationData['country'] ?? '정보 없음',
+            ),
+            InformationRow(
+              label: '이름',
+              value: reservationData['name'] ?? '정보 없음',
+            ),
+            InformationRow(
+              label: '성별',
+              value: reservationData['sex'] ?? '정보 없음',
+            ),
+            InformationRow(
+              label: '이메일',
+              value: reservationData['email'] ?? '정보 없음',
+            ),
+            InformationRow(
+              label: '여권번호',
+              value: reservationData['passportNumber'] ?? '정보 없음',
+            ),
+            InformationRow(
+              label: '여권만료일',
+              value: reservationData['passportExpirationDate'] ?? '정보 없음',
+            ),
+            InformationRow(
+              label: '인원',
+              value: '${(reservationData['entries'] as List<dynamic>?)?.length ?? '정보 없음'}',
+            ),
+            InformationRow(
+              label: '이용상품',
+              value: reservationData['productName'] ?? '정보 없음',
+            ),
           ],
         ),
       ),
+
     );
   }
 }
@@ -47,9 +74,9 @@ class InformationRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: 62,
       margin: EdgeInsets.symmetric(vertical: 8.0),
-      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 15.0),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(color: Colors.blueAccent, width: 2),
@@ -58,7 +85,8 @@ class InformationRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
-          Expanded(
+          SizedBox(
+            width: 121, // label에 대한 고정된 너비
             child: Text(
               label,
               style: TextStyle(
@@ -68,19 +96,22 @@ class InformationRow extends StatelessWidget {
               ),
             ),
           ),
+          // valueWidget 또는 value를 표시하는 부분은 Expanded를 사용하여 나머지 공간을 차지하도록 합니다.
           Expanded(
             child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                fontWeight: FontWeight.normal,
-                color: Colors.blueAccent,
-                fontSize: 14,
-              ),
-            ),
+                  value,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontWeight: FontWeight.normal,
+                    color: Colors.blueAccent,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
           ),
         ],
       ),
     );
+
   }
 }

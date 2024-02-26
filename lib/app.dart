@@ -56,7 +56,7 @@ class HostAppHomePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTranslatedText(
-                          reservationData['country'] ?? '', 'ko'),
+                          reservationData['country'] ?? 'no Data', 'ko'),
                       SizedBox(height: 3),
                       Text(
                         "이름: ${reservationData['name'] ?? '이름 없음'}",
@@ -97,12 +97,7 @@ class HostAppHomePage extends StatelessWidget {
                     ],
                   ),
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ReservationDetailsPage(
-                              reservationData: reservationData)),
-                    );
+                    navigateToDetailsPage(context, reservationData);
                     // Handle tap event
                   },
                 ),
@@ -132,6 +127,26 @@ class HostAppHomePage extends StatelessWidget {
           ); // 번역된 텍스트 또는 기본값
         }
       },
+    );
+  }
+  Future<void> navigateToDetailsPage(BuildContext context, Map<String, dynamic> reservationData) async {
+    final translatedCountry = await firestoreData.translateText(reservationData['country'] ?? '', 'ko');
+    final translatedSex = await firestoreData.translateText(reservationData['sex'] ?? '', 'ko');
+    final translatedProductName = await firestoreData.translateText(reservationData['productName'] ?? '', 'ko');
+
+    // 번역된 데이터를 포함하여 ReservationDetailsPage로 이동
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReservationDetailsPage(
+          reservationData: {
+            ...reservationData,
+            'country': translatedCountry,
+            'sex': translatedSex,
+            'productName': translatedProductName,
+          },
+        ),
+      ),
     );
   }
 }

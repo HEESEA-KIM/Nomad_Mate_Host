@@ -5,13 +5,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreData {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Map<String, String> _translationCache = {}; // 캐싱을 위한 맵 추가
 
   Stream<QuerySnapshot> getReservations() {
     return _firestore.collection('reservations').snapshots();
   }
   Future<String> translateText(String text, String targetLanguage) async {
-    if (targetLanguage == 'ko') {
-      return text; // 한국어일 경우 API 호출 없이 바로 반환
+
+    final cacheKey = '$text:$targetLanguage';
+    if (_translationCache.containsKey(cacheKey)) {
+      return _translationCache[cacheKey]!;
     }
 
     final apiKey = dotenv.env['APP_KEY'] ?? '';
@@ -32,7 +35,10 @@ class FirestoreData {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final translatedText = data['data']['translations'][0]['translatedText'];
-        return translatedText; // 여기에 return을 추가합니다.
+        // 번역 결과를 캐시에 저장
+        _translationCache[cacheKey] = translatedText;
+
+        return translatedText;
       } else {
         print('Translation API error: ${response.statusCode}, ${response.body}');
         return 'Error: Unable to translate';
