@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nomad/comfirmation.dart';
 
 import 'firestore_data.dart';
 
@@ -53,8 +54,22 @@ class ReservationDetailsPage extends StatelessWidget {
               label: '이용상품',
               value: reservationData['productName'] ?? '정보 없음',
             ),
+            SizedBox(height: 40), // 텍스트와 버튼 사이의 공간을 추가합니다.
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    // HostAppHomePage로 이동합니다.
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ConfirmationPage()));
+                  },
+                  child: Text('승인'),
+                ),
+              ],
+            ),
           ],
         ),
+
       ),
 
     );
