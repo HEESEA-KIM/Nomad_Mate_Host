@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nomad/app.dart';
 import 'firebase_options.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:nomad/LoginPage.dart';
 
 void setupNotificationChannel() async {
   if (Platform.isAndroid) {
@@ -107,7 +109,21 @@ class HostApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HostAppHomePage(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.active) {
+          User? user = snapshot.data;
+          if (user == null) {
+            return LoginPage();
+          } else {
+            return HostAppHomePage(); // 로그인 성공 시 이동페이지
+          }
+        } else {
+          return Center(child: CircularProgressIndicator());
+        }
+        },
+      ),
     );
   }
 }
