@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:nomad/firestore_data.dart';
 import 'package:nomad/reservation_detail.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class HostAppHomePage extends StatelessWidget {
   HostAppHomePage({super.key});
