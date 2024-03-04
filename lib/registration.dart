@@ -19,15 +19,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _phoneNumController = TextEditingController();
   final TextEditingController _verificationCodeController =
       TextEditingController();
-  Timer? _timer;
-  bool _showVerificationField = false;
-  int _remainingTime = 10; // 3분을 초 단위로 표현
+
   // FocusNode 인스턴스 추가 자동으로 프로프트를 비워져있는 텍스트필드로 이동
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
   final FocusNode _subscriptionFocusNode = FocusNode();
   final FocusNode _phoneNumFocusNode = FocusNode();
+  final FocusNode _verificationCodeFocusNode = FocusNode();
+
+  Timer? _timer;
+  bool _showVerificationField = false;
+  int _remainingTime = 10; // 3분을 초 단위로 표현
+  // 비밀번호 일치 여부를 추적하는 변수
+  bool _isPasswordMatched = false;
 
   @override
   void dispose() {
@@ -106,20 +111,41 @@ class _RegistrationPageState extends State<RegistrationPage> {
               ],
             ),
             SizedBox(height: 10),
-            TextField(
-              controller: _confirmPasswordController,
-              focusNode: _confirmPasswordFocusNode,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: "비밀번호 확인",
-                hintText: "비밀번호를 다시 입력하세요",
-                border: OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) {
-                FocusScope.of(context).requestFocus(_subscriptionFocusNode);
-              },
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _confirmPasswordController,
+                  focusNode: _confirmPasswordFocusNode,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: "비밀번호 확인",
+                    hintText: "비밀번호를 다시 입력하세요",
+                    border: OutlineInputBorder(),
+                  ),
+                  textInputAction: TextInputAction.next,
+                  onChanged: (value) {
+                    // 비밀번호 일치 여부를 검사
+                    setState(() {
+                      _isPasswordMatched = _passwordController.text == value;
+                    });
+                  },
+                  onSubmitted: (_) {
+                    FocusScope.of(context).requestFocus(_subscriptionFocusNode);
+                  },
+                ),
+                // 비밀번호 일치 여부에 따른 메시지 표시
+                Text(
+                  _isPasswordMatched ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다.",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: _isPasswordMatched ? Colors.green : Colors.red,
+                  ),
+                ),
+              ],
             ),
+
             SizedBox(height: 25),
             TextField(
               controller: _subscriptionController,
@@ -163,7 +189,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         // 인증번호 입력 필드를 표시하기 위해 상태 업데이트
                         _showVerificationField = true;
                       });
+
                       _startTimer();
+                      FocusScope.of(context)
+                          .requestFocus(_verificationCodeFocusNode);
                     },
                     child: Text(
                       "인증번호\n요청",
@@ -179,21 +208,28 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
                         width: 220,
                         child: TextField(
                           controller: _verificationCodeController,
+                          focusNode: _verificationCodeFocusNode,
                           decoration: InputDecoration(
                             labelText: "인증번호",
-                            hintText: "받은 인증번호를 입력하세요",
+                            hintText: "인증번호 입력",
                             border: OutlineInputBorder(),
                           ),
                           textInputAction: TextInputAction.done,
                         ),
                       ),
                       Text(
-                          '남은 시간: ${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}'), // 남은 시간 표시
+                        '남은 시간: ${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ), // 남은 시간 표시
                     ],
                   ),
                   SizedBox(
@@ -239,6 +275,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
     );
 
+    // 비밀번호 복잡성을 검사하기 위한 정규 표현식 (영문, 숫자, 특수기호 포함 10자 이상)
+    final passwordRegExp = RegExp(
+      r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{10,}$',
+    );
+
     // 필수 필드 검사
     if (_emailController.text.isEmpty) {
       _showWarningDialog("이메일을 입력해 주세요.");
@@ -252,8 +293,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _showWarningDialog("비밀번호를 입력해주세요");
       FocusScope.of(context).requestFocus(_passwordFocusNode);
       return; // 메서드 실행 종료
+    } else if (!passwordRegExp.hasMatch(_passwordController.text)) {
+      _showWarningDialog("비밀번호는 영문, 숫자, 특수기호 조합으로 10자 이상이어야 합니다.");
+      FocusScope.of(context).requestFocus(_passwordFocusNode);
+      return; // 메서드 실행 종료
     } else if (_confirmPasswordController.text.isEmpty) {
-      _showWarningDialog("비밀번호를 다시한번 입력해주세요.");
+      _showWarningDialog("비밀번호 확인란을 입력해주세요.");
+      FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
+      return; // 메서드 실행 종료
+    } else if (_passwordController.text != _confirmPasswordController.text) {
+      _showWarningDialog("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
       FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
       return; // 메서드 실행 종료
     } else if (_subscriptionController.text.isEmpty) {
