@@ -78,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: null,
                         style: ButtonStyle(
                           minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.28, 50)),
+                              Size(screenWidth * 0.18, 50)),
                         ),
                         child: Text('아이디 찾기'),
                       ),
@@ -86,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: null,
                         style: ButtonStyle(
                           minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.28, 50)),
+                              Size(screenWidth * 0.18, 50)),
                         ),
                         child: Text('비밀번호 찾기'),
                       ),
@@ -97,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                         style: ButtonStyle(
                           minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.28, 50)),
+                              Size(screenWidth * 0.18, 50)),
                         ),
                         child: Text('회원가입'),
                       ),
