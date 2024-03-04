@@ -48,7 +48,7 @@ class FirestoreData {
       return 'Exception: Unable to translate';
     }
   }
-  Future<void> addReservation(Map<String, dynamic> reservationData) async {
+  Future<void> addUser(Map<String, dynamic> reservationData) async {
     reservationData['timestamp'] = FieldValue.serverTimestamp();
     await _firestore.collection('userInformation').add(reservationData);
   }

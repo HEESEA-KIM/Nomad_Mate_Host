@@ -1,3 +1,5 @@
+import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nomad/firestore_data.dart';
 import 'login_page.dart';
@@ -41,7 +43,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   void _startTimer() {
-    _remainingTime = 10; // 3분으로 초기화
+    _remainingTime = 60; // 3분으로 초기화
     _timer?.cancel(); // 기존 타이머가 있다면 취소
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
@@ -145,7 +147,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ),
               ],
             ),
-
             SizedBox(height: 25),
             TextField(
               controller: _subscriptionController,
@@ -270,11 +271,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   }
 
   void _submitForm() async {
-    // 이메일 유효성 검사를 위한 정규 표현식
-    final emailRegExp = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
-    );
-
     // 비밀번호 복잡성을 검사하기 위한 정규 표현식 (영문, 숫자, 특수기호 포함 10자 이상)
     final passwordRegExp = RegExp(
       r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{10,}$',
@@ -283,61 +279,69 @@ class _RegistrationPageState extends State<RegistrationPage> {
     // 필수 필드 검사
     if (_emailController.text.isEmpty) {
       _showWarningDialog("이메일을 입력해 주세요.");
-      FocusScope.of(context).requestFocus(_emailFocusNode);
-      return; // 메서드 실행 종료
-    } else if (!emailRegExp.hasMatch(_emailController.text)) {
+      return;
+    } else if (!EmailValidator.validate(
+      _emailController.text.trim().replaceAll(' ', ''),
+    )) {
+      print("검증할 이메일 주소: ${_emailController.text.trim()}");
       _showWarningDialog("유효한 이메일 형식이 아닙니다.");
-      FocusScope.of(context).requestFocus(_emailFocusNode);
-      return; // 메서드 실행 종료
+      return;
     } else if (_passwordController.text.isEmpty) {
       _showWarningDialog("비밀번호를 입력해주세요");
-      FocusScope.of(context).requestFocus(_passwordFocusNode);
-      return; // 메서드 실행 종료
+      return;
     } else if (!passwordRegExp.hasMatch(_passwordController.text)) {
       _showWarningDialog("비밀번호는 영문, 숫자, 특수기호 조합으로 10자 이상이어야 합니다.");
-      FocusScope.of(context).requestFocus(_passwordFocusNode);
-      return; // 메서드 실행 종료
+      return;
     } else if (_confirmPasswordController.text.isEmpty) {
       _showWarningDialog("비밀번호 확인란을 입력해주세요.");
-      FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
-      return; // 메서드 실행 종료
+      return;
     } else if (_passwordController.text != _confirmPasswordController.text) {
       _showWarningDialog("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
-      FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
-      return; // 메서드 실행 종료
-    } else if (_subscriptionController.text.isEmpty) {
-      _showWarningDialog("구독코드를 입력해주세요.");
-      FocusScope.of(context).requestFocus(_subscriptionFocusNode);
-      return; // 메서드 실행 종료
-    } else if (_subscriptionController.text.isEmpty) {
-      _showWarningDialog("구독코드를 입력해주세요.");
-      FocusScope.of(context).requestFocus(_subscriptionFocusNode);
-      return; // 메서드 실행 종료
-    } else if (_phoneNumController.text.isEmpty) {
-      _showWarningDialog("전화번호를 입력해주세요");
-      FocusScope.of(context).requestFocus(_phoneNumFocusNode);
-      return; // 메서드 실행 종료
+      return;
     }
 
-    // Firestore에 저장할 데이터 준비
-    Map<String, dynamic> userDate = {
-      'email': _emailController.text,
-      'phone': _phoneNumController.text,
-      'subscription': _subscriptionController.text,
-    };
-
-    final firestoreService = FirestoreData();
     try {
-      await firestoreService.addReservation(userDate);
-      // 저장 성공 시 'Reservation Confirmation' 페이지로 이동
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
+      //firebase 회원가입 실행
+      String email = _emailController.text.trim().replaceAll(' ', '');
+      String password = _passwordController.text;
+
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      _showSuccessDialog();
+
+      // Firestore에 저장할 데이터 준비
+      Map<String, dynamic> userData = {
+        'uid': userCredential.user?.uid,
+        'email': _emailController.text,
+        'phone': _phoneNumController.text,
+        'subscription': _subscriptionController.text,
+      };
+
+      final firestoreService = FirestoreData();
+      await firestoreService.addUser(userData);
+
+      // 회원가입 성공 시 처리
+      _showSuccessDialog("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      // Firebase 회원가입 실패 시 처리
+      if (e.code == 'weak-password') {
+        _showWarningDialog("비밀번호가 너무 약합니다.");
+      } else if (e.code == 'email-already-in-use') {
+        _showWarningDialog("이미 사용중인 이메일입니다.");
+      } else if (e.code == 'The email address is badly formatted') {
+        _showWarningDialog("이메일에 공백등을 확인해주세요.");
+      } else {
+        _showWarningDialog("회원가입에 실패했습니다: ${e.message}");
+      }
     } catch (e) {
-      // 저장 실패 시 처리, 예를 들어 오류 메시지 표시
-      _showWarningDialog("네트워크 상의 이유로 회원가입이 실패했습니다.\n 다시 시도해주세요.: $e");
+      _showWarningDialog("오류가 발생했습니다: $e");
     }
   }
 
@@ -361,7 +365,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
   }
 
-  void _showSuccessDialog() {
+  void _showSuccessDialog(String s) {
     showDialog(
       context: context,
       builder: (BuildContext context) {

@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:nomad/firestore_data.dart';
+import 'package:nomad/login_page.dart';
 import 'package:nomad/reservation_detail.dart';
 
 class HostAppHomePage extends StatelessWidget {
@@ -17,6 +19,14 @@ class HostAppHomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text(' 예약 현황 '),
         backgroundColor: const Color(0xFF2D3E5E),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout), // 로그아웃 아이콘
+            onPressed: () {
+              _signOut(context); // 로그아웃 함수 호출
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestoreData.getReservations(),
@@ -135,18 +145,37 @@ class HostAppHomePage extends StatelessWidget {
     final translatedProductName = await firestoreData.translateText(reservationData['productName'] ?? '', 'ko');
 
     // 번역된 데이터를 포함하여 ReservationDetailsPage로 이동
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ReservationDetailsPage(
-          reservationData: {
-            ...reservationData,
-            'country': translatedCountry,
-            'sex': translatedSex,
-            'productName': translatedProductName,
-          },
+    if(context.mounted){
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReservationDetailsPage(
+            reservationData: {
+              ...reservationData,
+              'country': translatedCountry,
+              'sex': translatedSex,
+              'productName': translatedProductName,
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
+
+  }
+  // Firebase에서 로그아웃하는 함수
+  void _signOut(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      if(context.mounted){
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
+    } catch (e) {
+      print("로그아웃 중 오류 발생: $e");
+      // 오류 발생 시 처리
+    }
   }
 }
+
