@@ -6,10 +6,32 @@ import 'package:nomad/firestore_data.dart';
 import 'package:nomad/login_page.dart';
 import 'package:nomad/reservation_detail.dart';
 
-class HostAppHomePage extends StatelessWidget {
+class HostAppHomePage extends StatefulWidget {
   HostAppHomePage({super.key});
 
+  @override
+  State<HostAppHomePage> createState() => _HostAppHomePageState();
+}
+
+class _HostAppHomePageState extends State<HostAppHomePage> {
   final FirestoreData firestoreData = FirestoreData();
+  String? userSubscriptionCode;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserSubscriptionCode();
+  }
+
+  Future<void> _fetchUserSubscriptionCode() async {
+    String? code = await firestoreData.getUserSubscriptionCode();
+    if(mounted){
+      setState(() {
+        userSubscriptionCode = code;
+      });
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +50,11 @@ class HostAppHomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: firestoreData.getReservations(),
+      body: userSubscriptionCode == null
+          ? Center(child: Text("구독 코드를 불러오는 중입니다."))
+          : StreamBuilder<QuerySnapshot>(
+
+        stream: firestoreData.getReservationsForCode(userSubscriptionCode!),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
@@ -139,6 +164,7 @@ class HostAppHomePage extends StatelessWidget {
       },
     );
   }
+
   Future<void> navigateToDetailsPage(BuildContext context, Map<String, dynamic> reservationData) async {
     final translatedCountry = await firestoreData.translateText(reservationData['country'] ?? '', 'ko');
     final translatedSex = await firestoreData.translateText(reservationData['sex'] ?? '', 'ko');
@@ -162,6 +188,7 @@ class HostAppHomePage extends StatelessWidget {
     }
 
   }
+
   // Firebase에서 로그아웃하는 함수
   void _signOut(BuildContext context) async {
     try {

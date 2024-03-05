@@ -315,7 +315,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         'uid': userCredential.user?.uid,
         'email': _emailController.text,
         'phone': _phoneNumController.text,
-        'subscription': _subscriptionController.text,
+        'subscriptionCode': _subscriptionController.text,
       };
 
       final firestoreService = FirestoreData();
