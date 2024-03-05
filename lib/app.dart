@@ -17,6 +17,7 @@ class HostAppHomePage extends StatefulWidget {
 class _HostAppHomePageState extends State<HostAppHomePage> {
   final FirestoreData firestoreData = FirestoreData();
   String? userSubscriptionCode;
+  bool _isLoggingOut = false; // 로그아웃 중인지 나타내는 플래그
 
   @override
   void initState() {
@@ -36,7 +37,12 @@ class _HostAppHomePageState extends State<HostAppHomePage> {
   @override
   Widget build(BuildContext context) {
     final firestoreData = FirestoreData();
-
+    if (_isLoggingOut) {
+      // 로그아웃 중 로딩 인디케이터 표시
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text(' 예약 현황 '),
@@ -197,6 +203,10 @@ class _HostAppHomePageState extends State<HostAppHomePage> {
 
   // 로그아웃 로직을 포함한 _signOut 함수
   Future<void> _signOut(BuildContext context) async {
+    setState(() {
+      _isLoggingOut = true; // 로그아웃 시작, 로딩 인디케이터 활성화
+    });
+
     try {
       // 현재 로그인한 사용자의 subscriptionCode 가져오기
       String? subscriptionCode = await firestoreData.getUserSubscriptionCode();
@@ -209,10 +219,16 @@ class _HostAppHomePageState extends State<HostAppHomePage> {
       // 로그아웃 처리
       await FirebaseAuth.instance.signOut();
       // 로그인 페이지로 이동
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => LoginPage()));
+      if (context.mounted) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => LoginPage()));
+      }
     } catch (e) {
       print("로그아웃 중 오류 발생: $e");
+    } finally {
+      setState(() {
+        _isLoggingOut = false; // 로그아웃 완료, 로딩 인디케이터 비활성화
+      });
     }
   }
 }
