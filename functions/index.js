@@ -8,26 +8,28 @@ admin.initializeApp({
 
 exports.sendReservationNotification = functions.firestore
     .document("reservations/{reservationId}")
-    .onCreate((snapshot, context) => { // 화살표 함수 매개변수에 괄호 추가
+    .onCreate((snapshot, context) => {
         const reservationData = snapshot.data();
 
         const payload = {
             notification: {
                 title: "새로운 예약이 접수되었습니다.",
                 body: `${reservationData.name}님의 예약을 확인 후 승인 해 주세요.`,
-                // 여기에 추가 옵션을 포함할 수 있습니다.
             },
         };
 
-        // 특정 토큰이나 주제를 구독한 사용자에게 알림을 보냅니다.
-        // 예시: admin.messaging().sendToTopic("reservations", payload);
-        // 개별 토큰 사용 시: admin.messaging().sendToDevice(token, payload);
+        // reservationData에서 subscriptionCode를 가져옵니다.
+        // 예약 문서에 subscriptionCode 필드가 반드시 존재해야 합니다.
+        const subscriptionCode = reservationData.subscriptionCode;
 
-        return admin.messaging().sendToTopic("reservations", payload)
+        // subscriptionCode를 사용하여 동적으로 주제를 결정하고 해당 주제에 알림을 발송합니다.
+        return admin.messaging().sendToTopic(`subscriptionCode_${subscriptionCode}`, payload)
             .then((response) => {
                 console.log("Successfully sent message:", response);
+                return null; // Cloud Functions에서는 반드시 Promise 또는 null을 반환해야 합니다.
             })
             .catch((error) => {
                 console.log("Error sending message:", error);
+                return null;
             });
     });

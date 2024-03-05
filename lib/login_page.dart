@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:nomad/app.dart';
@@ -16,6 +18,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -49,21 +53,29 @@ class _LoginPageState extends State<LoginPage> {
                   SizedBox(height: 30),
                   TextField(
                     controller: _emailController,
+                    focusNode: _emailFocusNode,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: '아이디',
                       hintText: '아이디를 입력하세요',
                     ),
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_passwordFocusNode);
+                    },
                   ),
                   SizedBox(height: 10.0),
                   TextField(
                     controller: _passwordController,
+                    focusNode: _passwordFocusNode,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: '비밀번호',
                       hintText: '비밀번호를 입력하세요',
                     ),
                     obscureText: true,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {},
                   ),
                   SizedBox(height: 10.0),
                   ElevatedButton(
@@ -114,7 +126,9 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true; // 로딩 시작
     });
 
-    if (!EmailValidator.validate(_emailController.text.trim())) {
+    if (!EmailValidator.validate(
+      _emailController.text.trim().replaceAll(' ', ''),
+    )) {
       _showWarningDialog("유효한 이메일 주소를 입력하세요.");
       setState(() {
         _isLoading = false; // 로딩 종료
@@ -133,10 +147,23 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
+        email: _emailController.text.trim().replaceAll(' ', ''),
         password: _passwordController.text,
       );
-
+      // 현재 로그인된 사용자 가져오기
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        // Firestore에서 사용자의 subscriptionCode 조회
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('userInformation')
+            .doc(currentUser.uid)
+            .get();
+        if (userDoc.exists) {
+          String subscriptionCode = userDoc.get('subscriptionCode');
+          // FCM 주제 구독
+          await subscribeToTopic(subscriptionCode);
+        }
+      }
       // 로그인 성공 시 메인 페이지로 이동
       if (context.mounted) {
         Navigator.of(context).pushReplacement(
@@ -188,5 +215,10 @@ class _LoginPageState extends State<LoginPage> {
         );
       },
     );
+  }
+
+  Future<void> subscribeToTopic(String subscriptionCode) async {
+    await FirebaseMessaging.instance
+        .subscribeToTopic("subscriptionCode_$subscriptionCode");
   }
 }
