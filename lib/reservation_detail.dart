@@ -107,7 +107,7 @@ class InformationRow extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: Colors.black87,
-                fontSize: 16,
+                fontSize: 12,
               ),
             ),
           ),
@@ -119,7 +119,7 @@ class InformationRow extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.normal,
                     color: Colors.blueAccent,
-                    fontSize: 13,
+                    fontSize: 11,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
