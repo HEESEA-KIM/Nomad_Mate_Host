@@ -1,6 +1,7 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:nomad/comfirmation.dart';
-
 import 'firestore_data.dart';
 
 class ReservationDetailsPage extends StatelessWidget {
@@ -9,6 +10,26 @@ class ReservationDetailsPage extends StatelessWidget {
 
   ReservationDetailsPage({Key? key, required this.reservationData})
       : super(key: key);
+
+  Future<void> sendApprovalEmail() async {
+    final url = Uri.parse(
+        'https://us-central1-nomadmate.cloudfunctions.net/sendApprovalEmail'); // Firebase Function의 실제 URL로 대체
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'to': reservationData['email'], // Firestore에서 받아온 이메일 주소
+        'subject': '예약 승인 알림', // 메일 제목
+        'body': '예약이 승인되었습니다. 감사합니다.', // 메일 본문
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Email sent successfully');
+    } else {
+      print('Failed to send email. Status code: ${response.statusCode}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +69,8 @@ class ReservationDetailsPage extends StatelessWidget {
             ),
             InformationRow(
               label: '인원',
-              value: '${(reservationData['entries'] as List<dynamic>?)?.length ?? '정보 없음'}',
+              value:
+                  '${(reservationData['entries'] as List<dynamic>?)?.length ?? '정보 없음'}',
             ),
             InformationRow(
               label: '이용상품',
@@ -60,8 +82,12 @@ class ReservationDetailsPage extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
+                    sendApprovalEmail();
                     // HostAppHomePage로 이동합니다.
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ConfirmationPage()));
+                    Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => ConfirmationPage()));
                   },
                   child: Text('승인'),
                 ),
@@ -69,9 +95,7 @@ class ReservationDetailsPage extends StatelessWidget {
             ),
           ],
         ),
-
       ),
-
     );
   }
 }
@@ -114,19 +138,18 @@ class InformationRow extends StatelessWidget {
           // valueWidget 또는 value를 표시하는 부분은 Expanded를 사용하여 나머지 공간을 차지하도록 합니다.
           Expanded(
             child: Text(
-                  value,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontWeight: FontWeight.normal,
-                    color: Colors.blueAccent,
-                    fontSize: 11,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                color: Colors.blueAccent,
+                fontSize: 11,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
     );
-
   }
 }
