@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -13,14 +17,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  final TextEditingController _subscriptionController = TextEditingController();
-
+  File? _selectedImage; // 선택된 이미지 파일을 저장할 변수
   // FocusNode 인스턴스 추가 자동으로 프로프트를 비워져있는 텍스트필드로 이동
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
-  final FocusNode _subscriptionFocusNode = FocusNode();
-  final FocusNode _phoneNumFocusNode = FocusNode();
 
   // 비밀번호 일치 여부를 추적하는 변수
   bool _isPasswordMatched = false;
@@ -104,9 +105,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       _isPasswordMatched = _passwordController.text == value;
                     });
                   },
-                  onSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(_subscriptionFocusNode);
-                  },
+                  onSubmitted: (_) {},
                 ),
                 // 비밀번호 일치 여부에 따른 메시지 표시
                 Text(
@@ -117,21 +116,36 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     color: _isPasswordMatched ? Colors.green : Colors.red,
                   ),
                 ),
+                SizedBox(height: 25),
+                OutlinedButton(
+                  onPressed: _pickImage,
+                  child: Text('이미지 선택'),
+                ),
+                SizedBox(height: 10),
+                _selectedImage != null
+                    ? Image.file(
+                        _selectedImage!,
+                        width: 350,
+                        height: 330,
+                        fit: BoxFit.cover,
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('사업자등록증을 업로드해 주세요.'),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Text(
+                            '사업자등록증은 인증을 위한 용도 이외에\n사용되지 않습니다.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
               ],
-            ),
-            SizedBox(height: 25),
-            TextField(
-              controller: _subscriptionController,
-              focusNode: _subscriptionFocusNode,
-              decoration: InputDecoration(
-                labelText: "구독코드",
-                hintText: "구독코드를 입력하세요",
-                border: OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) {
-                FocusScope.of(context).requestFocus(_phoneNumFocusNode);
-              },
             ),
             SizedBox(height: 25),
             ElevatedButton(
@@ -175,6 +189,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _showWarningDialog("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
       return;
     }
+    await _uploadImageToFirebase();
   }
 
   void _showWarningDialog(String message) {
@@ -195,5 +210,61 @@ class _RegistrationPageState extends State<RegistrationPage> {
         );
       },
     );
+  }
+
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (image != null) {
+        _selectedImage = File(image.path);
+      } else {
+        print('이미지가 선택되지 않았습니다.');
+      }
+    });
+  }
+
+  Future<void> _uploadImageToFirebase() async {
+    if (_selectedImage == null) {
+      _showWarningDialog("이미지를 선택해주세요.");
+      return;
+    }
+
+    String fileName = 'user_images/${DateTime.now()}.png';
+    FirebaseStorage storage = FirebaseStorage.instance;
+    try {
+      await storage.ref(fileName).putFile(_selectedImage!);
+      final imageUrl = await storage.ref(fileName).getDownloadURL();
+      print("업로드된 이미지 URL: $imageUrl");
+
+      // 업로드 성공 후 회원가입 완료 메시지를 보여주고, "OK"를 누르면 LoginPage로 돌아갑니다.
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('회원가입 완료'),
+              content: Text('회원가입 요청이 정상적으로 접수되었습니다. 승인 후 이메일로 안내드리겠습니다.'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    // 여기서 Navigator.pop을 두 번 호출하여, AlertDialog와 RegistrationPage 둘 다를 pop합니다.
+                    // LoginPage로 돌아가기 위함입니다.
+                    Navigator.of(context)
+                      ..pop()
+                      ..pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print(e);
+      _showWarningDialog("이미지 업로드에 실패했습니다.");
+    }
   }
 }
