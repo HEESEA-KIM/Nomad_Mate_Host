@@ -20,7 +20,8 @@ class FirestoreData {
   Future<String?> getUserSubscriptionCode() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      DocumentSnapshot userDoc = await _firestore.collection('userInformation').doc(user.uid).get();
+      DocumentSnapshot userDoc =
+          await _firestore.collection('userInformation').doc(user.uid).get();
       if (userDoc.data() != null) {
         Map<String, dynamic> userData = userDoc.data()! as Map<String, dynamic>;
         String? subscriptionCode = userData['subscriptionCode'] as String?;
@@ -29,15 +30,16 @@ class FirestoreData {
     }
     return null;
   }
-  Future<String> translateText(String text, String targetLanguage) async {
 
+  Future<String> translateText(String text, String targetLanguage) async {
     final cacheKey = '$text:$targetLanguage';
     if (_translationCache.containsKey(cacheKey)) {
       return _translationCache[cacheKey]!;
     }
 
     final apiKey = dotenv.env['APP_KEY'] ?? '';
-    final url = Uri.parse('https://translation.googleapis.com/language/translate/v2?key=$apiKey');
+    final url = Uri.parse(
+        'https://translation.googleapis.com/language/translate/v2?key=$apiKey');
 
     try {
       final response = await http.post(
@@ -53,13 +55,15 @@ class FirestoreData {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final translatedText = data['data']['translations'][0]['translatedText'];
+        final translatedText =
+            data['data']['translations'][0]['translatedText'];
         // 번역 결과를 캐시에 저장
         _translationCache[cacheKey] = translatedText;
 
         return translatedText;
       } else {
-        print('Translation API error: ${response.statusCode}, ${response.body}');
+        print(
+            'Translation API error: ${response.statusCode}, ${response.body}');
         return 'Error: Unable to translate';
       }
     } catch (e) {
@@ -67,13 +71,4 @@ class FirestoreData {
       return 'Exception: Unable to translate';
     }
   }
-  Future<void> addUser(Map<String, dynamic> reservationData) async {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      reservationData['timestamp'] = FieldValue.serverTimestamp();
-      // 현재 사용자의 uid를 문서 ID로 사용합니다.
-      await _firestore.collection('userInformation').doc(user.uid).set(reservationData);
-    }
-// Add more Firestore operations here as needed
-}
 }

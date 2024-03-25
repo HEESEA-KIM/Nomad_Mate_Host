@@ -1,9 +1,5 @@
 import 'package:email_validator/email_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:nomad/firestore_data.dart';
-import 'login_page.dart';
-import 'dart:async';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -18,9 +14,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final TextEditingController _subscriptionController = TextEditingController();
-  final TextEditingController _phoneNumController = TextEditingController();
-  final TextEditingController _verificationCodeController =
-      TextEditingController();
 
   // FocusNode 인스턴스 추가 자동으로 프로프트를 비워져있는 텍스트필드로 이동
   final FocusNode _emailFocusNode = FocusNode();
@@ -28,34 +21,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final FocusNode _confirmPasswordFocusNode = FocusNode();
   final FocusNode _subscriptionFocusNode = FocusNode();
   final FocusNode _phoneNumFocusNode = FocusNode();
-  final FocusNode _verificationCodeFocusNode = FocusNode();
 
-  Timer? _timer;
-  bool _showVerificationField = false;
-  int _remainingTime = 10; // 3분을 초 단위로 표현
   // 비밀번호 일치 여부를 추적하는 변수
   bool _isPasswordMatched = false;
 
   @override
   void dispose() {
-    _timer?.cancel(); // 위젯이 dispose될 때 타이머를 취소
     super.dispose();
-  }
-
-  void _startTimer() {
-    _remainingTime = 60; // 3분으로 초기화
-    _timer?.cancel(); // 기존 타이머가 있다면 취소
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (_remainingTime > 0) {
-        setState(() {
-          _remainingTime--;
-        });
-      } else {
-        _timer?.cancel();
-        // 시간이 만료되었을 때의 동작을 여기에 추가
-        _showWarningDialog("인증번호 입력 시간이 만료되었습니다.");
-      }
-    });
   }
 
   @override
@@ -162,102 +134,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
               },
             ),
             SizedBox(height: 25),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 220,
-                  child: TextField(
-                    controller: _phoneNumController,
-                    focusNode: _phoneNumFocusNode,
-                    decoration: InputDecoration(
-                      labelText: "휴대폰번호",
-                      border: OutlineInputBorder(),
-                    ),
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) {},
-                  ),
-                ),
-                SizedBox(
-                  width: 20,
-                ),
-                SizedBox(
-                  width: 130,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        // 인증번호 입력 필드를 표시하기 위해 상태 업데이트
-                        _showVerificationField = true;
-                      });
-
-                      _startTimer();
-                      FocusScope.of(context)
-                          .requestFocus(_verificationCodeFocusNode);
-                    },
-                    child: Text(
-                      "인증번호\n요청",
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (_showVerificationField) SizedBox(height: 25),
-            if (_showVerificationField)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 220,
-                        child: TextField(
-                          controller: _verificationCodeController,
-                          focusNode: _verificationCodeFocusNode,
-                          decoration: InputDecoration(
-                            labelText: "인증번호",
-                            hintText: "인증번호 입력",
-                            border: OutlineInputBorder(),
-                          ),
-                          textInputAction: TextInputAction.done,
-                        ),
-                      ),
-                      Text(
-                        '남은 시간: ${_remainingTime ~/ 60}:${(_remainingTime % 60).toString().padLeft(2, '0')}',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ), // 남은 시간 표시
-                    ],
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10.0),
-                    child: SizedBox(
-                      width: 130,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            // 인증번호 입력 필드를 표시하기 위해 상태 업데이트
-                            _showVerificationField = true;
-                          });
-                        },
-                        child: Text(
-                          "인증번호\n확인",
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            SizedBox(height: 25),
             ElevatedButton(
               onPressed: () {
                 _submitForm();
@@ -299,50 +175,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _showWarningDialog("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
       return;
     }
-
-    try {
-      //firebase 회원가입 실행
-      String email = _emailController.text.trim().replaceAll(' ', '');
-      String password = _passwordController.text;
-
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      // Firestore에 저장할 데이터 준비
-      Map<String, dynamic> userData = {
-        'uid': userCredential.user?.uid,
-        'email': _emailController.text,
-        'phone': _phoneNumController.text,
-        'subscriptionCode': _subscriptionController.text,
-      };
-
-      final firestoreService = FirestoreData();
-      await firestoreService.addUser(userData);
-
-      // 회원가입 성공 시 처리
-      _showSuccessDialog("회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.");
-      if (context.mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      // Firebase 회원가입 실패 시 처리
-      if (e.code == 'weak-password') {
-        _showWarningDialog("비밀번호가 너무 약합니다.");
-      } else if (e.code == 'email-already-in-use') {
-        _showWarningDialog("이미 사용중인 이메일입니다.");
-      } else if (e.code == 'The email address is badly formatted') {
-        _showWarningDialog("이메일에 공백등을 확인해주세요.");
-      } else {
-        _showWarningDialog("회원가입에 실패했습니다: ${e.message}");
-      }
-    } catch (e) {
-      _showWarningDialog("오류가 발생했습니다: $e");
-    }
   }
 
   void _showWarningDialog(String message) {
@@ -357,31 +189,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showSuccessDialog(String s) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('회원가입 완료'),
-          content: Text("회원가입이 완료되었습니다."),
-          actions: <Widget>[
-            TextButton(
-              child: Text('확인'),
-              onPressed: () {
-                Navigator.of(context).pop(); // 알림창을 닫음
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const LoginPage()), // LoginPage로 이동
-                );
               },
             ),
           ],
