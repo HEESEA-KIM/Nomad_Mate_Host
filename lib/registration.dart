@@ -287,6 +287,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'email': _emailController.text.trim(),
           'imageURL': imageUrl,
           'isVerified': false,
+          'subscriptionCode': "",
         });
       }
       setLoading(false);
