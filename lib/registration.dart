@@ -1,12 +1,10 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'login_page.dart';
 
 class RegistrationPage extends StatefulWidget {
@@ -27,6 +25,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
 
+  // 로딩 상태를 추적하는 변수 추가
+  bool _isLoading = false;
+
   // 비밀번호 일치 여부를 추적하는 변수
   bool _isPasswordMatched = false;
 
@@ -42,129 +43,137 @@ class _RegistrationPageState extends State<RegistrationPage> {
         title: Text("회원가입"),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              focusNode: _emailFocusNode,
-              decoration: InputDecoration(
-                labelText: "이메일",
-                hintText: "이메일을 입력하세요",
-                border: OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) {
-                FocusScope.of(context).requestFocus(_passwordFocusNode);
-              },
-            ),
-            SizedBox(height: 25),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _passwordController,
-                  focusNode: _passwordFocusNode,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: "비밀번호",
-                    hintText: "비밀번호를 입력하세요",
-                    border: OutlineInputBorder(),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(), // 로딩 인디케이터 표시
+            )
+          : SingleChildScrollView(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextField(
+                    controller: _emailController,
+                    focusNode: _emailFocusNode,
+                    decoration: InputDecoration(
+                      labelText: "이메일",
+                      hintText: "이메일을 입력하세요",
+                      border: OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_passwordFocusNode);
+                    },
                   ),
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) {
-                    FocusScope.of(context)
-                        .requestFocus(_confirmPasswordFocusNode);
-                  },
-                ),
-                Text(
-                  "비밀번호는 영문+숫자+특수기호 조합으로 10자 이상",
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  controller: _confirmPasswordController,
-                  focusNode: _confirmPasswordFocusNode,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: "비밀번호 확인",
-                    hintText: "비밀번호를 다시 입력하세요",
-                    border: OutlineInputBorder(),
-                  ),
-                  textInputAction: TextInputAction.next,
-                  onChanged: (value) {
-                    // 비밀번호 일치 여부를 검사
-                    setState(() {
-                      _isPasswordMatched = _passwordController.text == value;
-                    });
-                  },
-                  onSubmitted: (_) {},
-                ),
-                // 비밀번호 일치 여부에 따른 메시지 표시
-                Text(
-                  _isPasswordMatched ? "비밀번호가 일치합니다." : "비밀번호가 일치하지 않습니다.",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: _isPasswordMatched ? Colors.green : Colors.red,
-                  ),
-                ),
-                SizedBox(height: 25),
-                OutlinedButton(
-                  onPressed: _pickImage,
-                  child: Text('이미지 선택'),
-                ),
-                SizedBox(height: 10),
-                _selectedImage != null
-                    ? Image.file(
-                        _selectedImage!,
-                        width: 350,
-                        height: 330,
-                        fit: BoxFit.cover,
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('사업자등록증을 업로드해 주세요.'),
-                          SizedBox(
-                            height: 8,
-                          ),
-                          Text(
-                            '사업자등록증은 인증을 위한 용도 이외에\n사용되지 않습니다.',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                  SizedBox(height: 25),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _passwordController,
+                        focusNode: _passwordFocusNode,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: "비밀번호",
+                          hintText: "비밀번호를 입력하세요",
+                          border: OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        onSubmitted: (_) {
+                          FocusScope.of(context)
+                              .requestFocus(_confirmPasswordFocusNode);
+                        },
                       ),
-              ],
+                      Text(
+                        "비밀번호는 영문+숫자+특수기호 조합으로 10자 이상",
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _confirmPasswordController,
+                        focusNode: _confirmPasswordFocusNode,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: "비밀번호 확인",
+                          hintText: "비밀번호를 다시 입력하세요",
+                          border: OutlineInputBorder(),
+                        ),
+                        textInputAction: TextInputAction.next,
+                        onChanged: (value) {
+                          // 비밀번호 일치 여부를 검사
+                          setState(() {
+                            _isPasswordMatched =
+                                _passwordController.text == value;
+                          });
+                        },
+                        onSubmitted: (_) {},
+                      ),
+                      // 비밀번호 일치 여부에 따른 메시지 표시
+                      Text(
+                        _isPasswordMatched
+                            ? "비밀번호가 일치합니다."
+                            : "비밀번호가 일치하지 않습니다.",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _isPasswordMatched ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      SizedBox(height: 25),
+                      OutlinedButton(
+                        onPressed: _pickImage,
+                        child: Text('이미지 선택'),
+                      ),
+                      SizedBox(height: 10),
+                      _selectedImage != null
+                          ? Image.file(
+                              _selectedImage!,
+                              width: 350,
+                              height: 330,
+                              fit: BoxFit.cover,
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('사업자등록증을 업로드해 주세요.'),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                Text(
+                                  '사업자등록증은 인증을 위한 용도 이외에\n사용되지 않습니다.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ],
+                  ),
+                  SizedBox(height: 25),
+                  ElevatedButton(
+                    onPressed: () {
+                      _submitForm();
+                    },
+                    child: Text("회원가입"),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 25),
-            ElevatedButton(
-              onPressed: () {
-                _submitForm();
-              },
-              child: Text("회원가입"),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
   void _submitForm() async {
+    setLoading(true); // 로딩 시작
     // 비밀번호 복잡성을 검사하기 위한 정규 표현식 (영문, 숫자, 특수기호 포함 10자 이상)
     final passwordRegExp = RegExp(
       r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{10,}$',
@@ -172,25 +181,36 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     // 필수 필드 검사
     if (_emailController.text.isEmpty) {
+      setLoading(false);
       _showWarningDialog("이메일을 입력해 주세요.");
       return;
     } else if (!EmailValidator.validate(
       _emailController.text.trim().replaceAll(' ', ''),
     )) {
       print("검증할 이메일 주소: ${_emailController.text.trim()}");
+      setLoading(false);
       _showWarningDialog("유효한 이메일 형식이 아닙니다.");
       return;
     } else if (_passwordController.text.isEmpty) {
+      setLoading(false);
       _showWarningDialog("비밀번호를 입력해주세요");
       return;
     } else if (!passwordRegExp.hasMatch(_passwordController.text)) {
+      setLoading(false);
       _showWarningDialog("비밀번호는 영문, 숫자, 특수기호 조합으로 10자 이상이어야 합니다.");
       return;
     } else if (_confirmPasswordController.text.isEmpty) {
+      setLoading(false);
       _showWarningDialog("비밀번호 확인란을 입력해주세요.");
       return;
     } else if (_passwordController.text != _confirmPasswordController.text) {
+      setLoading(false);
       _showWarningDialog("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
+      return;
+    } else if (_selectedImage == null) {
+      // 이미지 선택 여부 검증 추가
+      setLoading(false);
+      _showWarningDialog("이미지를 선택해주세요.");
       return;
     }
     try {
@@ -205,6 +225,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
         await _uploadImageToFirebase(userCredential.user!);
       }
     } catch (e) {
+      setLoading(false);
       _showWarningDialog("회원가입 중 오류가 발생했습니다. ${e.toString()}");
     }
   }
@@ -244,6 +265,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Future<void> _uploadImageToFirebase(User user) async {
     if (_selectedImage == null) {
+      setLoading(false);
       _showWarningDialog("이미지를 선택해주세요.");
       return;
     }
@@ -267,11 +289,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'isVerified': false,
         });
       }
+      setLoading(false);
       _showRegistrationCompleteDialog();
       // 회원가입 프로세스가 성공적으로 완료된 후, 사용자를 로그아웃시킵니다.
       await FirebaseAuth.instance.signOut();
     } catch (e) {
       print(e);
+      setLoading(false);
       _showWarningDialog("이미지 업로드에 실패했습니다.");
     }
   }
@@ -281,8 +305,18 @@ class _RegistrationPageState extends State<RegistrationPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('회원가입 완료'),
-          content: Text('회원가입 요청이 정상적으로 접수되었습니다. 승인 후 이메일로 안내드리겠습니다.'),
+          title: Text(
+            '회원가입 완료',
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
+          content: Text(
+            '회원가입 요청이 접수되었습니다.\n승인 후 이메일로 안내드립니다.',
+            style: TextStyle(
+              fontSize: 13,
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
@@ -303,5 +337,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
         );
       },
     );
+  }
+
+  //로딩상태 관리 함수
+  void setLoading(bool isLoading) {
+    setState(() {
+      _isLoading = isLoading;
+    });
   }
 }

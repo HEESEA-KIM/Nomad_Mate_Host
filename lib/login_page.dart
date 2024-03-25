@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:nomad/app.dart';
 import 'package:nomad/registration.dart';
+import 'package:nomad/reset_password.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -100,7 +101,10 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: null,
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => ResetPasswordPage()));
+                        },
                         style: ButtonStyle(
                           minimumSize: MaterialStateProperty.all(
                               Size(screenWidth * 0.1, 45)),
@@ -169,17 +173,21 @@ class _LoginPageState extends State<LoginPage> {
             .collection('userInformation') // 사용자 정보가 있는 적절한 컬렉션을 선택하세요
             .doc(currentUser.uid)
             .get();
-        Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+        Map<String, dynamic>? userData =
+            userDoc.data() as Map<String, dynamic>?;
 
         // userData가 null이 아니고, 'isVerified' 키를 포함하며, 해당 값이 true일 경우 로직을 수행
-        if (userData != null && userData.containsKey('isVerified') && userData['isVerified'] == true) {
+        if (userData != null &&
+            userData.containsKey('isVerified') &&
+            userData['isVerified'] == true) {
           if (userData.containsKey('subscriptionCode')) {
             String subscriptionCode = userData['subscriptionCode'];
             await subscribeToTopic(subscriptionCode);
           }
           // 로그인 성공 시 메인 페이지로 이동
-          if(mounted){
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HostAppHomePage()));
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HostAppHomePage()));
           }
         } else {
           // `isVerified`가 false이거나 필드가 없는 경우
@@ -219,12 +227,18 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('로그인 실패',style: TextStyle(
-            fontSize: 18,
-          ),),
-          content: Text(message,style: TextStyle(
-            fontSize: 13,
-          ),),
+          title: Text(
+            '로그인 실패',
+            style: TextStyle(
+              fontSize: 18,
+            ),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(
+              fontSize: 13,
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               child: Text('확인'),
