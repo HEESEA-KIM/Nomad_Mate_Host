@@ -1,9 +1,13 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'login_page.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -189,7 +193,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _showWarningDialog("비밀번호가 일치하지 않습니다. 다시 입력해주세요.");
       return;
     }
-    await _uploadImageToFirebase();
+    try {
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      // 사용자가 생성되면 즉시 이미지 업로드 및 Firestore에 사용자 정보 저장
+      if (userCredential.user != null) {
+        await _uploadImageToFirebase(userCredential.user!);
+      }
+    } catch (e) {
+      _showWarningDialog("회원가입 중 오류가 발생했습니다. ${e.toString()}");
+    }
   }
 
   void _showWarningDialog(String message) {
@@ -225,7 +242,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     });
   }
 
-  Future<void> _uploadImageToFirebase() async {
+  Future<void> _uploadImageToFirebase(User user) async {
     if (_selectedImage == null) {
       _showWarningDialog("이미지를 선택해주세요.");
       return;
@@ -237,34 +254,54 @@ class _RegistrationPageState extends State<RegistrationPage> {
       await storage.ref(fileName).putFile(_selectedImage!);
       final imageUrl = await storage.ref(fileName).getDownloadURL();
       print("업로드된 이미지 URL: $imageUrl");
-
-      // 업로드 성공 후 회원가입 완료 메시지를 보여주고, "OK"를 누르면 LoginPage로 돌아갑니다.
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('회원가입 완료'),
-              content: Text('회원가입 요청이 정상적으로 접수되었습니다. 승인 후 이메일로 안내드리겠습니다.'),
-              actions: <Widget>[
-                TextButton(
-                  child: Text('OK'),
-                  onPressed: () {
-                    // 여기서 Navigator.pop을 두 번 호출하여, AlertDialog와 RegistrationPage 둘 다를 pop합니다.
-                    // LoginPage로 돌아가기 위함입니다.
-                    Navigator.of(context)
-                      ..pop()
-                      ..pop();
-                  },
-                ),
-              ],
-            );
-          },
-        );
+      // Firebase Authentication으로부터 현재 사용자의 UID를 얻음
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Firestore에 사용자 데이터 저장
+        final FirebaseFirestore firestore = FirebaseFirestore.instance;
+        await firestore.collection('userInformation').doc(user.uid).set({
+          'timestamp': Timestamp.now(),
+          'uid': user.uid,
+          'email': _emailController.text.trim(),
+          'imageURL': imageUrl,
+          'isVerified': false,
+        });
       }
+      _showRegistrationCompleteDialog();
+      // 회원가입 프로세스가 성공적으로 완료된 후, 사용자를 로그아웃시킵니다.
+      await FirebaseAuth.instance.signOut();
     } catch (e) {
       print(e);
       _showWarningDialog("이미지 업로드에 실패했습니다.");
     }
+  }
+
+  void _showRegistrationCompleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('회원가입 완료'),
+          content: Text('회원가입 요청이 정상적으로 접수되었습니다. 승인 후 이메일로 안내드리겠습니다.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () async {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+
+                // 회원가입 완료 후 로그아웃 처리
+                await FirebaseAuth.instance.signOut();
+
+                // 로그인 페이지로 돌아가기
+                if (mounted) {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => LoginPage()));
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

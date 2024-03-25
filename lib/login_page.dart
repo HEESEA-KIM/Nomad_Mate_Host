@@ -164,21 +164,27 @@ class _LoginPageState extends State<LoginPage> {
       // 현재 로그인된 사용자 가져오기
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        // Firestore에서 사용자의 subscriptionCode 조회
+        // Firestore에서 사용자의 `isVerified` 상태 및 `subscriptionCode` 조회
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('userInformation')
+            .collection('userInformation') // 사용자 정보가 있는 적절한 컬렉션을 선택하세요
             .doc(currentUser.uid)
             .get();
-        if (userDoc.exists) {
-          String subscriptionCode = userDoc.get('subscriptionCode');
-          // FCM 주제 구독
-          await subscribeToTopic(subscriptionCode);
+        Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+        // userData가 null이 아니고, 'isVerified' 키를 포함하며, 해당 값이 true일 경우 로직을 수행
+        if (userData != null && userData.containsKey('isVerified') && userData['isVerified'] == true) {
+          if (userData.containsKey('subscriptionCode')) {
+            String subscriptionCode = userData['subscriptionCode'];
+            await subscribeToTopic(subscriptionCode);
+          }
+          // 로그인 성공 시 메인 페이지로 이동
+          if(mounted){
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => HostAppHomePage()));
+          }
+        } else {
+          // `isVerified`가 false이거나 필드가 없는 경우
+          _showWarningDialog("계정이 인증되지 않았습니다\n관리자 승인을 기다려주세요.");
         }
-      }
-      // 로그인 성공 시 메인 페이지로 이동
-      if (context.mounted) {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => HostAppHomePage()));
       }
     } on FirebaseAuthException catch (e) {
       _handleLoginError(e);
@@ -196,13 +202,13 @@ class _LoginPageState extends State<LoginPage> {
 
     switch (e.code) {
       case 'user-not-found':
-        errorMessage = "사용자를 찾을 수 없습니다. 이메일을 확인해 주세요.";
+        errorMessage = "사용자를 찾을 수 없습니다.\n이메일을 확인해 주세요.";
         break;
       case 'wrong-password':
-        errorMessage = "잘못된 비밀번호입니다. 다시 시도해 주세요.";
+        errorMessage = "잘못된 비밀번호입니다\n다시 시도해 주세요.";
         break;
       default:
-        errorMessage = "로그인에 실패했습니다. 다시 시도해 주세요.";
+        errorMessage = "로그인에 실패했습니다.\n다시 시도해 주세요.";
     }
 
     _showWarningDialog(errorMessage);
@@ -213,8 +219,12 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('로그인 실패'),
-          content: Text(message),
+          title: Text('로그인 실패',style: TextStyle(
+            fontSize: 18,
+          ),),
+          content: Text(message,style: TextStyle(
+            fontSize: 13,
+          ),),
           actions: <Widget>[
             TextButton(
               child: Text('확인'),
