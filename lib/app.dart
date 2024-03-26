@@ -57,7 +57,7 @@ class _HostAppHomePageState extends State<HostAppHomePage> {
         ],
       ),
       body: userSubscriptionCode == null
-          ? Center(child: Text("구독 코드를 불러오는 중입니다."))
+          ? Center(child: Text("예약사항을 불러오는 중입니다."))
           : StreamBuilder<QuerySnapshot>(
               stream:
                   firestoreData.getReservationsForCode(userSubscriptionCode!),
@@ -71,7 +71,9 @@ class _HostAppHomePageState extends State<HostAppHomePage> {
                 }
 
                 final data = snapshot.requireData;
-
+                if (data.size == 0) { // 여기에서 데이터 크기를 확인.
+                  return Center(child: Text("현재 등록된 예약이 없습니다.")); // 예약이 없을 때 표시될 메시지
+                }
                 return ListView.builder(
                   itemCount: data.size,
                   itemBuilder: (context, index) {
