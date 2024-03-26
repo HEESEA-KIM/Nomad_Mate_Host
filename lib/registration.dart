@@ -1,3 +1,4 @@
+import 'dart:ffi';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
@@ -15,12 +16,21 @@ class RegistrationPage extends StatefulWidget {
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
+  final TextEditingController _businessController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   File? _selectedImage; // 선택된 이미지 파일을 저장할 변수
   // FocusNode 인스턴스 추가 자동으로 프로프트를 비워져있는 텍스트필드로 이동
+  final FocusNode _businessFocusNode = FocusNode();
+  final FocusNode _addressFocusNode = FocusNode();
+  final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _descriptionFocusNode = FocusNode();
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _confirmPasswordFocusNode = FocusNode();
@@ -52,6 +62,62 @@ class _RegistrationPageState extends State<RegistrationPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  TextField(
+                    controller: _businessController,
+                    focusNode: _businessFocusNode,
+                    decoration: InputDecoration(
+                      labelText: "상호명",
+                      hintText: "상호명을 입력하세요",
+                      border: OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {},
+                  ),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: _addressController,
+                    focusNode: _addressFocusNode,
+                    decoration: InputDecoration(
+                      labelText: "주소",
+                      hintText: "주소를 입력하세요",
+                      border: OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {},
+                  ),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: _phoneController,
+                    focusNode: _phoneFocusNode,
+                    decoration: InputDecoration(
+                      labelText: "연락처",
+                      hintText: "-없이 입력해주세요",
+                      border: OutlineInputBorder(),
+                    ),
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) {},
+                  ),
+                  SizedBox(height: 25),
+                  TextField(
+                    controller: _descriptionController,
+                    focusNode: _descriptionFocusNode,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 50),
+                      labelText: "상품 설명",
+                      labelStyle: TextStyle(fontSize: 15),
+                      hintText: "상품에 대한 설명을 적어주세요.\n(150자 이내)",
+                      hintStyle: TextStyle(fontSize: 13),
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLength: 150,
+                    maxLines: null,
+                    textInputAction: TextInputAction.newline,
+                    keyboardType: TextInputType.multiline,
+                    onSubmitted: (_) {
+                      FocusScope.of(context).requestFocus(_emailFocusNode);
+                    },
+                  ),
+                  SizedBox(height: 10),
                   TextField(
                     controller: _emailController,
                     focusNode: _emailFocusNode,
