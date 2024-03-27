@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  bool _isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -41,17 +42,18 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               )
             : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
+                  SizedBox(height: 50),
                   Text(
                     'NOMAD MATE',
                     style: TextStyle(
-                      fontSize: 30.0,
+                      fontSize: 50.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.blueAccent,
                     ),
                   ),
-                  SizedBox(height: 30),
+                  SizedBox(height: 50),
                   TextField(
                     controller: _emailController,
                     focusNode: _emailFocusNode,
@@ -73,34 +75,66 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(),
                       labelText: '비밀번호',
                       hintText: '비밀번호를 입력하세요',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = ! _isPasswordVisible;
+                          });
+                        },
+                      ),
                     ),
-                    obscureText: true,
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) {},
+                    obscureText: _isPasswordVisible,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) {
+                      _login();
+                    },
                   ),
                   SizedBox(height: 10.0),
-                  ElevatedButton(
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.95,
+                  height: MediaQuery.of(context).size.height * 0.07,
+                  child: ElevatedButton(
                     onPressed: _login, // 수정된 부분
-                    child: Text('Login'),
+                    child: Text('로그인',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  ),
+                  SizedBox(height: 28.0),
+                  Divider(
+                    color: Colors.grey,
+                    thickness: 2,
+                    indent: 2,
+                    endIndent: 2,
                   ),
                   SizedBox(height: 18.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ElevatedButton(
+                      TextButton(
                         onPressed: null,
                         style: ButtonStyle(
                           minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.1, 45)),
+                              Size(screenWidth * 0.14, 45)),
                         ),
-                        child: Text(
-                          '아이디 찾기',
+                        child: Text('아이디 찾기',
                           style: TextStyle(
+                            color: Colors.black,
                             fontSize: 12,
                           ),
                         ),
                       ),
-                      ElevatedButton(
+                      Container(
+                        height: 15,
+                        child: VerticalDivider(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      TextButton(
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => ResetPasswordPage()));
@@ -109,12 +143,22 @@ class _LoginPageState extends State<LoginPage> {
                           minimumSize: MaterialStateProperty.all(
                               Size(screenWidth * 0.1, 45)),
                         ),
-                        child: Text(
-                          '비밀번호 찾기',
-                          style: TextStyle(fontSize: 12),
+                        child:
+                        Text('비밀번호 찾기',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                      ElevatedButton(
+                      Container(
+                        height: 15,
+                        child: VerticalDivider(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      TextButton(
                         onPressed: () {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) => RegistrationPage()));
@@ -123,9 +167,11 @@ class _LoginPageState extends State<LoginPage> {
                           minimumSize: MaterialStateProperty.all(
                               Size(screenWidth * 0.1, 45)),
                         ),
-                        child: Text(
-                          '회원가입',
-                          style: TextStyle(fontSize: 12),
+                        child: Text('회원가입',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ],
