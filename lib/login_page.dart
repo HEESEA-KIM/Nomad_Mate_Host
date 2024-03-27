@@ -5,6 +5,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:nomad/app.dart';
+import 'package:nomad/find_email.dart';
 import 'package:nomad/registration.dart';
 import 'package:nomad/reset_password.dart';
 
@@ -98,16 +99,17 @@ class _LoginPageState extends State<LoginPage> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             ElevatedButton(
-                              onPressed: null,
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => FindEmailPage()));
+                              },
                               style: ButtonStyle(
                                 minimumSize: MaterialStateProperty.all(
                                     Size(screenWidth * 0.1, 45)),
                               ),
                               child: Text(
                                 '아이디 찾기',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                ),
+                                style: TextStyle(fontSize: 12),
                               ),
                             ),
                             ElevatedButton(
