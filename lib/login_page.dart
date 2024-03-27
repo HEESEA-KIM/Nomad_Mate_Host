@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               )
             : SingleChildScrollView(
-              child: Center(
+                child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                         minHeight: MediaQuery.of(context).size.height -
@@ -67,8 +67,8 @@ class _LoginPageState extends State<LoginPage> {
                           focusNode: _emailFocusNode,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
-                            labelText: '아이디',
-                            hintText: '아이디를 입력하세요',
+                            labelText: '이메일',
+                            hintText: '이메일을 입력하세요',
                           ),
                           textInputAction: TextInputAction.next,
                           onSubmitted: (_) {
@@ -108,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                                     Size(screenWidth * 0.1, 45)),
                               ),
                               child: Text(
-                                '아이디 찾기',
+                                '이메일 찾기',
                                 style: TextStyle(fontSize: 12),
                               ),
                             ),
@@ -146,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-            ),
+              ),
       ),
     );
   }
