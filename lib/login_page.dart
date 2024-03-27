@@ -40,98 +40,111 @@ class _LoginPageState extends State<LoginPage> {
                   size: 50.0,
                 ),
               )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'NOMAD MATE',
-                    style: TextStyle(
-                      fontSize: 30.0,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  TextField(
-                    controller: _emailController,
-                    focusNode: _emailFocusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: '아이디',
-                      hintText: '아이디를 입력하세요',
-                    ),
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(_passwordFocusNode);
-                    },
-                  ),
-                  SizedBox(height: 10.0),
-                  TextField(
-                    controller: _passwordController,
-                    focusNode: _passwordFocusNode,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: '비밀번호',
-                      hintText: '비밀번호를 입력하세요',
-                    ),
-                    obscureText: true,
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) {},
-                  ),
-                  SizedBox(height: 10.0),
-                  ElevatedButton(
-                    onPressed: _login, // 수정된 부분
-                    child: Text('Login'),
-                  ),
-                  SizedBox(height: 18.0),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: null,
-                        style: ButtonStyle(
-                          minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.1, 45)),
-                        ),
-                        child: Text(
-                          '아이디 찾기',
+            : SingleChildScrollView(
+              child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height -
+                            AppBar().preferredSize.height -
+                            MediaQuery.of(context).padding.top),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          'NOMAD MATE',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 30.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blueAccent,
                           ),
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => ResetPasswordPage()));
-                        },
-                        style: ButtonStyle(
-                          minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.1, 45)),
+                        SizedBox(height: 30),
+                        TextField(
+                          controller: _emailController,
+                          focusNode: _emailFocusNode,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: '아이디',
+                            hintText: '아이디를 입력하세요',
+                          ),
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) {
+                            FocusScope.of(context)
+                                .requestFocus(_passwordFocusNode);
+                          },
                         ),
-                        child: Text(
-                          '비밀번호 찾기',
-                          style: TextStyle(fontSize: 12),
+                        SizedBox(height: 10.0),
+                        TextField(
+                          controller: _passwordController,
+                          focusNode: _passwordFocusNode,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: '비밀번호',
+                            hintText: '비밀번호를 입력하세요',
+                          ),
+                          obscureText: true,
+                          textInputAction: TextInputAction.next,
+                          onSubmitted: (_) {},
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => RegistrationPage()));
-                        },
-                        style: ButtonStyle(
-                          minimumSize: MaterialStateProperty.all(
-                              Size(screenWidth * 0.1, 45)),
+                        SizedBox(height: 10.0),
+                        ElevatedButton(
+                          onPressed: _login, // 수정된 부분
+                          child: Text('Login'),
                         ),
-                        child: Text(
-                          '회원가입',
-                          style: TextStyle(fontSize: 12),
+                        SizedBox(height: 18.0),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: null,
+                              style: ButtonStyle(
+                                minimumSize: MaterialStateProperty.all(
+                                    Size(screenWidth * 0.1, 45)),
+                              ),
+                              child: Text(
+                                '아이디 찾기',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => ResetPasswordPage()));
+                              },
+                              style: ButtonStyle(
+                                minimumSize: MaterialStateProperty.all(
+                                    Size(screenWidth * 0.1, 45)),
+                              ),
+                              child: Text(
+                                '비밀번호 찾기',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => RegistrationPage()));
+                              },
+                              style: ButtonStyle(
+                                minimumSize: MaterialStateProperty.all(
+                                    Size(screenWidth * 0.1, 45)),
+                              ),
+                              child: Text(
+                                '회원가입',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+            ),
       ),
     );
   }

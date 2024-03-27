@@ -33,8 +33,8 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("알림"),
-        content: Text(message),
+        title: Text("알림",style: TextStyle(fontSize: 17),),
+        content: Text(message,style: TextStyle(fontSize: 13),),
         actions: <Widget>[
           TextButton(
             child: Text('확인'),
@@ -53,23 +53,32 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       appBar: AppBar(
         title: Text("비밀번호 재설정"),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text("비밀번호 재설정을 위해 \n가입하신 이메일 주소를 입력해주세요."),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: "이메일"),
-              keyboardType: TextInputType.emailAddress,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Center( // Center 위젯 추가
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height - AppBar().preferredSize.height - MediaQuery.of(context).padding.top),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Text("비밀번호 재설정을 위해 \n가입하신 이메일 주소를 입력해주세요."),
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(labelText: "이메일"),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: _resetPassword,
+                    child: Text("비밀번호 재설정 링크 보내기"),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _resetPassword,
-              child: Text("비밀번호 재설정 링크 보내기"),
-            ),
-          ],
+          ),
         ),
       ),
     );

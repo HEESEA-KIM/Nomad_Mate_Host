@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:email_validator/email_validator.dart';
@@ -246,7 +245,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
     );
 
     // 필수 필드 검사
-    if (_emailController.text.isEmpty) {
+    if (_businessController.text.isEmpty) {
+      setLoading(false);
+      _showWarningDialog("상호명을 입력해 주세요.");
+      return;
+    } else if (_addressController.text.isEmpty) {
+      setLoading(false);
+      _showWarningDialog("주소를 입력해 주세요.");
+      return;
+    } else if (_phoneController.text.isEmpty) {
+      setLoading(false);
+      _showWarningDialog("연락처를 입력해 주세요.");
+      return;
+    } else if (_descriptionController.text.isEmpty) {
+      setLoading(false);
+      _showWarningDialog("상품설명을 입력해 주세요.");
+      return;
+    } else if (_emailController.text.isEmpty) {
       setLoading(false);
       _showWarningDialog("이메일을 입력해 주세요.");
       return;
@@ -290,9 +305,17 @@ class _RegistrationPageState extends State<RegistrationPage> {
       if (userCredential.user != null) {
         await _uploadImageToFirebase(userCredential.user!);
       }
+    } on FirebaseAuthException catch (e) {
+      setLoading(false);
+      if (e.code == 'email-already-in-use') {
+        _showWarningDialog("입력하신 이메일 주소는 이미 사용 중입니다. 다른 이메일 주소를 사용해 주세요.");
+      } else {
+        _showWarningDialog("회원가입 중 오류가 발생했습니다. ${e.message}");
+      }
     } catch (e) {
       setLoading(false);
-      _showWarningDialog("회원가입 중 오류가 발생했습니다. ${e.toString()}");
+      _showWarningDialog(
+          "회원가입 중 알 수 없는 오류가 발생했습니다. 다시 시도해 주세요. ${e.toString()}");
     }
   }
 
@@ -301,8 +324,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('알림'),
-          content: Text(message),
+          title: Text(
+            '알림',
+            style: TextStyle(fontSize: 18),
+          ),
+          content: Text(
+            message,
+            style: TextStyle(fontSize: 13),
+          ),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
@@ -350,6 +379,10 @@ class _RegistrationPageState extends State<RegistrationPage> {
         await firestore.collection('userInformation').doc(user.uid).set({
           'timestamp': Timestamp.now(),
           'uid': user.uid,
+          'business': _businessController.text.trim(),
+          'address': _addressController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'description': _descriptionController.text.trim(),
           'email': _emailController.text.trim(),
           'imageURL': imageUrl,
           'isVerified': false,
